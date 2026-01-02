@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK RACE PROCESSOR PRO | 2026 Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2ecc71;
+            --bright-yellow: #f1c40f;
+            --soft-white: #f8f9fa;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --dark-accent: #1e272e;
+        }
+
+        body {
+            margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #0b0f13; color: var(--soft-white); min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        #bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(11, 15, 19, 0.85), rgba(11, 15, 19, 0.85)), 
+                        url('https://wallpapercat.com/w/full/b/b/8/2131817-2560x1600-desktop-hd-horse-racing-wallpaper-photo.jpg');
+            background-size: cover; z-index: -1;
+        }
+
+        .password-screen {
+            max-width: 420px; margin: 80px auto; padding: 40px;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; 
+            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .login-logo { max-width: 200px; margin-bottom: 25px; filter: drop-shadow(0 0 10px rgba(46, 204, 113, 0.5)); }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #333 !important; border: none !important;
+            border-radius: 12px; padding: 12px 20px; font-weight: 500;
+        }
+
+        .btn-modern {
+            border-radius: 12px; padding: 12px 25px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; border: none;
+        }
+
+        .btn-green { background: var(--primary-green); color: #fff; }
+        .btn-green:hover { background: #27ae60; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3); }
+        .btn-yellow { background: var(--bright-yellow); color: #000; }
+        .btn-yellow:hover { background: #d4ac0d; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(241, 196, 15, 0.3); }
+        .btn-cyan { background: #00d2d3; color: #fff; }
+
+        .race-block {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px; margin-bottom: 25px; border-radius: 20px;
+        }
+
+        .race-meeting {
+            font-size: 1.6rem; font-weight: 800; color: var(--bright-yellow);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-green);
+        }
+
+        .remove-btn {
+            background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid #ff7675;
+            padding: 5px 15px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;
+        }
+
+        .race-line {
+            font-family: 'Consolas', monospace; font-size: 1.15rem; color: var(--soft-white); 
+            padding: 8px 15px; background: rgba(255, 255, 255, 0.03); margin-bottom: 8px; border-radius: 10px;
+        }
+
+        .hidden { display: none; }
+        .container { max-width: 1000px; padding-top: 40px; flex: 1; }
+        label { font-weight: 600; color: var(--primary-green); margin-bottom: 8px; }
+
+        /* Footer & Modals */
+        footer {
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
+            padding: 30px 0; margin-top: 50px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .footer-links span { color: var(--soft-white); cursor: pointer; margin: 0 15px; font-size: 0.9rem; font-weight: 600; }
+        .footer-links span:hover { color: var(--primary-green); }
+        .copyright { margin-top: 15px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); }
+
+        /* Custom Popup Modal Styles */
+        .custom-modal {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+        }
+        .modal-content {
+            background: #1e272e; margin: 10% auto; padding: 30px; border: 1px solid var(--primary-green);
+            width: 60%; border-radius: 20px; position: relative; color: white;
+        }
+        .close-modal { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; color: var(--bright-yellow); }
+    </style>
+</head>
+<body>
+    <div id="bg-overlay"></div>
+
+    <div id="passwordScreen" class="password-screen">
+        <img src="https://leisuresportsholdings.com/images/logolg.png" alt="Logo" class="login-logo">
+        <h4 class="mb-4 text-white">SECURE ACCESS 2026</h4>
+        <input type="password" id="passInput" class="form-control mb-4 text-center" placeholder="ACCESS KEY">
+        <button class="btn btn-modern btn-green w-100" onclick="checkPass()">ENTER SYSTEM</button>
+    </div>
+
+    <div id="mainContent" class="container hidden">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <img src="https://leisuresportsholdings.com/images/logolg.png" height="50" class="mb-2">
+                <h2 class="text-white m-0">PREMIUM RACE <span style="color: var(--primary-green);">DASHBOARD</span></h2>
+            </div>
+            <button class="btn btn-sm btn-outline-light rounded-pill px-4" onclick="location.reload()">LOGOUT</button>
+        </div>
+
+        <div class="race-block">
+            <div class="row">
+                <div class="col-12 mb-4"><label>DATA INPUT FEED</label><textarea id="raceInput" class="form-control" rows="8"></textarea></div>
+                <div class="col-12 mb-4"><label>MEETING FILTER (COMMA SEPARATED)</label><input type="text" id="filterInput" class="form-control"></div>
+                <div class="col-12">
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button class="btn btn-modern btn-green flex-grow-1" onclick="processData()">ANALYZE DATA</button>
+                        <button class="btn btn-modern btn-cyan" onclick="downloadTXT()">SAVE TXT</button>
+                        <button class="btn btn-modern btn-yellow" onclick="clearDashboard()">RESET</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="output"></div>
+    </div>
+
+    <div id="infoModal" class="custom-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle" style="color: var(--bright-yellow);"></h2>
+            <hr style="border-color: var(--primary-green);">
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <span onclick="showInfo('about')">ABOUT US</span>
+            <span onclick="showInfo('terms')">TERMS OF SERVICE</span>
+            <span onclick="showInfo('privacy')">PRIVACY POLICY</span>
+        </div>
+        <div class="copyright">© 2026 | LS Publication Dept. | Developed by Charith Neranga</div>
+    </footer>
+
+    <script>
+        document.getElementById('passInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPass(); });
+
+        function checkPass() {
+            if(document.getElementById('passInput').value === "lal1234") {
+                document.getElementById('passwordScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+            } else { alert("ACCESS DENIED"); }
+        }
+
+        function showInfo(type) {
+            const modal = document.getElementById('infoModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            
+            if(type === 'about') {
+                title.innerText = "ABOUT US";
+                body.innerHTML = "<p>LS Publication Dept. is a leading provider of premium horse racing analytics. Our 2026 digital dashboard is designed for high-speed data processing and accurate reporting for UK racing enthusiasts.</p>";
+            } else if(type === 'terms') {
+                title.innerText = "TERMS OF SERVICE";
+                body.innerHTML = "<p>1. Usage is restricted to authorized personnel only. 2. Data processed through this dashboard is for analytical purposes. 3. Unauthorized distribution of extracted data is strictly prohibited.</p>";
+            } else {
+                title.innerText = "PRIVACY POLICY";
+                body.innerHTML = "<p>Your session data is processed locally. We do not store your pasted race cards on our servers. Access keys are encrypted and session-based to ensure maximum security.</p>";
+            }
+            modal.style.display = "block";
+        }
+
+        function closeModal() { document.getElementById('infoModal').style.display = "none"; }
+
+        let currentRaces = [];
+        function processData() {
+            const text = document.getElementById('raceInput').value;
+            const filterText = document.getElementById('filterInput').value.toUpperCase();
+            const filterArray = filterText.split(',').map(s => s.trim()).filter(s => s !== "");
+            const lines = text.split('\n');
+            let currentMeeting = "";
+            let races = [];
+            let activeRace = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (!line) continue;
+                if (/^[A-Z\s]{3,20}$/.test(line) && !line.includes('£') && !line.includes('—')) {
+                    currentMeeting = line; continue;
+                }
+                let raceStartMatch = line.match(/^([A-Za-z]+\/\d+)\s+(\d{1,2}[—:]\d{2})/);
+                if (raceStartMatch) {
+                    activeRace = { meeting: currentMeeting, code: raceStartMatch[1], ukTime: raceStartMatch[2], slTime: "N/A", prize: "£0", runners: "0" };
+                    races.push(activeRace); continue;
+                }
+                if (activeRace) {
+                    let slMatch = line.match(/^\((\d{1,2}[.:]\d{2})\)$/);
+                    if (slMatch) activeRace.slTime = slMatch[1];
+                    let prizeMatch = line.match(/£([\d,]+)/);
+                    if (prizeMatch) activeRace.prize = "£" + prizeMatch[1];
+                    let runnerMatch = line.match(/(\d+)\s+runners/);
+                    if (runnerMatch) { activeRace.runners = runnerMatch[1]; activeRace = null; }
+                }
+            }
+            currentRaces = filterArray.length > 0 ? races.filter(r => filterArray.includes(r.meeting.toUpperCase())) : races;
+            render();
+        }
+
+        function render() {
+            const output = document.getElementById('output');
+            output.innerHTML = "";
+            if (currentRaces.length === 0) { output.innerHTML = "<div class='text-center p-5 opacity-50'><h4>SYSTEM READY...</h4></div>"; return; }
+            const grouped = currentRaces.reduce((acc, r) => { (acc[r.meeting] = acc[r.meeting] || []).push(r); return acc; }, {});
+            for (const meet in grouped) {
+                let html = `<div class="race-block"><div class="race-meeting"><span>${meet}</span><button class="remove-btn" onclick="removeMeeting('${meet}')">CLOSE</button></div>`;
+                grouped[meet].forEach(r => { html += `<div class="race-line">${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.</div>`; });
+                output.innerHTML += html + `</div>`;
+            }
+        }
+
+        function removeMeeting(meetingName) { currentRaces = currentRaces.filter(r => r.meeting !== meetingName); render(); }
+        function clearDashboard() { document.getElementById('raceInput').value = ''; document.getElementById('output').innerHTML = ''; currentRaces = []; }
+        function downloadTXT() {
+            if (currentRaces.length === 0) return alert("NO DATA FOUND");
+            let txt = "LEISURE SPORTS HOLDINGS - UK RACE REPORT\n\n";
+            currentRaces.forEach(r => { txt += `${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.\n`; });
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Race_Report_2026.txt"; a.click();
+        }
+    </script>
+</body>
+</html>
