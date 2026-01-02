@@ -74,6 +74,13 @@
             padding: 8px 15px; background: rgba(255, 255, 255, 0.03); margin-bottom: 8px; border-radius: 10px;
         }
 
+        /* Highlight Style */
+        .highlight-prize {
+            background: rgba(241, 196, 15, 0.2) !important;
+            border: 1px solid var(--bright-yellow);
+            color: var(--bright-yellow) !important;
+        }
+
         .hidden { display: none; }
         .container { max-width: 1000px; padding-top: 40px; flex: 1; }
         label { font-weight: 600; color: var(--primary-green); margin-bottom: 8px; }
@@ -200,14 +207,18 @@
                 }
                 let raceStartMatch = line.match(/^([A-Za-z]+\/\d+)\s+(\d{1,2}[—:]\d{2})/);
                 if (raceStartMatch) {
-                    activeRace = { meeting: currentMeeting, code: raceStartMatch[1], ukTime: raceStartMatch[2], slTime: "N/A", prize: "£0", runners: "0" };
+                    let ukTimeFormatted = raceStartMatch[2].replace(/[—:]/, ':');
+                    activeRace = { meeting: currentMeeting, code: raceStartMatch[1], ukTime: ukTimeFormatted, slTime: "N/A", prize: "£0", prizeValue: 0, runners: "0" };
                     races.push(activeRace); continue;
                 }
                 if (activeRace) {
                     let slMatch = line.match(/^\((\d{1,2}[.:]\d{2})\)$/);
-                    if (slMatch) activeRace.slTime = slMatch[1];
+                    if (slMatch) activeRace.slTime = slMatch[1].replace('.', ':');
                     let prizeMatch = line.match(/£([\d,]+)/);
-                    if (prizeMatch) activeRace.prize = "£" + prizeMatch[1];
+                    if (prizeMatch) {
+                        activeRace.prize = "£" + prizeMatch[1];
+                        activeRace.prizeValue = parseInt(prizeMatch[1].replace(/,/g, ''));
+                    }
                     let runnerMatch = line.match(/(\d+)\s+runners/);
                     if (runnerMatch) { activeRace.runners = runnerMatch[1]; activeRace = null; }
                 }
@@ -222,18 +233,35 @@
             if (currentRaces.length === 0) { output.innerHTML = "<div class='text-center p-5 opacity-50'><h4>SYSTEM READY...</h4></div>"; return; }
             const grouped = currentRaces.reduce((acc, r) => { (acc[r.meeting] = acc[r.meeting] || []).push(r); return acc; }, {});
             for (const meet in grouped) {
+                const maxPrize = Math.max(...grouped[meet].map(r => r.prizeValue));
                 let html = `<div class="race-block"><div class="race-meeting"><span>${meet}</span><button class="remove-btn" onclick="removeMeeting('${meet}')">CLOSE</button></div>`;
-                grouped[meet].forEach(r => { html += `<div class="race-line">${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.</div>`; });
+                grouped[meet].forEach(r => { 
+                    const highlightClass = (r.prizeValue === maxPrize && maxPrize > 0) ? "highlight-prize" : "";
+                    html += `<div class="race-line ${highlightClass}">${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.</div>`; 
+                });
                 output.innerHTML += html + `</div>`;
             }
         }
 
         function removeMeeting(meetingName) { currentRaces = currentRaces.filter(r => r.meeting !== meetingName); render(); }
         function clearDashboard() { document.getElementById('raceInput').value = ''; document.getElementById('output').innerHTML = ''; currentRaces = []; }
+        
         function downloadTXT() {
             if (currentRaces.length === 0) return alert("NO DATA FOUND");
-            let txt = "LEISURE SPORTS HOLDINGS - UK RACE REPORT\n\n";
-            currentRaces.forEach(r => { txt += `${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.\n`; });
+            let txt = "LEISURE SPORTS HOLDINGS - UK RACE REPORT\n";
+            txt += "========================================\n\n";
+            
+            // Group races by meeting for organized TXT output
+            const grouped = currentRaces.reduce((acc, r) => { (acc[r.meeting] = acc[r.meeting] || []).push(r); return acc; }, {});
+            
+            for (const meet in grouped) {
+                txt += `${meet}\n`; // Meeting Name
+                grouped[meet].forEach(r => {
+                    txt += `${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.\n`;
+                });
+                txt += "\n"; // Space between meetings
+            }
+            
             const blob = new Blob([txt], { type: 'text/plain' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Race_Report_2026.txt"; a.click();
         }
