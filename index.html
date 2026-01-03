@@ -203,7 +203,6 @@
                 let line = lines[i].trim();
                 if (!line) continue;
 
-                // Meeting Matcher: Added Hyphen support for names like CAGNES-SUR-MER
                 if (/^[A-Z\s\-]{3,30}$/.test(line) && !line.includes('£') && !line.includes('—')) {
                     currentMeeting = line; continue;
                 }
@@ -219,7 +218,6 @@
                     let slMatch = line.match(/^\((\d{1,2}[.:]\d{2})\)$/);
                     if (slMatch) activeRace.slTime = slMatch[1].replace('.', ':');
                     
-                    // Class Matcher
                     let classMatch = line.match(/\((Class \d+)\)/i);
                     if (classMatch) activeRace.raceClass = classMatch[1];
 
@@ -275,12 +273,20 @@
 
         function downloadExcel() {
             if (currentRaces.length === 0) return alert("NO DATA FOUND");
+            
+            // UTF-8 BOM to ensure symbols like £ render correctly in Excel
+            const BOM = '\uFEFF';
             let csv = "Meeting,Code,UK Time,SL Time,Class,Prize,Runners\n";
+            
             currentRaces.forEach(r => {
                 csv += `"${r.meeting}","${r.code}","${r.ukTime}","${r.slTime}","${r.raceClass}","${r.prize}","${r.runners}"\n`;
             });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Race_Data_2026.csv"; a.click();
+            
+            const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "Race_Data_2026.csv";
+            a.click();
         }
     </script>
 </body>
