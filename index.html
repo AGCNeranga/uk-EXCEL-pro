@@ -52,6 +52,8 @@
         .btn-yellow { background: var(--bright-yellow); color: #000; }
         .btn-yellow:hover { background: #d4ac0d; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(241, 196, 15, 0.3); }
         .btn-cyan { background: #00d2d3; color: #fff; }
+        .btn-excel { background: #1f7244; color: #fff; }
+        .btn-excel:hover { background: #165231; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(31, 114, 68, 0.3); }
 
         .race-block {
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
@@ -74,7 +76,6 @@
             padding: 8px 15px; background: rgba(255, 255, 255, 0.03); margin-bottom: 8px; border-radius: 10px;
         }
 
-        /* Highlight Style */
         .highlight-prize {
             background: rgba(241, 196, 15, 0.2) !important;
             border: 1px solid var(--bright-yellow);
@@ -85,7 +86,6 @@
         .container { max-width: 1000px; padding-top: 40px; flex: 1; }
         label { font-weight: 600; color: var(--primary-green); margin-bottom: 8px; }
 
-        /* Footer & Modals */
         footer {
             background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
             padding: 30px 0; margin-top: 50px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -94,7 +94,6 @@
         .footer-links span:hover { color: var(--primary-green); }
         .copyright { margin-top: 15px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); }
 
-        /* Custom Popup Modal Styles */
         .custom-modal {
             display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
@@ -133,6 +132,7 @@
                     <div class="d-flex gap-3 flex-wrap">
                         <button class="btn btn-modern btn-green flex-grow-1" onclick="processData()">ANALYZE DATA</button>
                         <button class="btn btn-modern btn-cyan" onclick="downloadTXT()">SAVE TXT</button>
+                        <button class="btn btn-modern btn-excel" onclick="downloadExcel()">SAVE EXCEL</button>
                         <button class="btn btn-modern btn-yellow" onclick="clearDashboard()">RESET</button>
                     </div>
                 </div>
@@ -202,18 +202,27 @@
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i].trim();
                 if (!line) continue;
-                if (/^[A-Z\s]{3,20}$/.test(line) && !line.includes('£') && !line.includes('—')) {
+
+                // Meeting Matcher: Added Hyphen support for names like CAGNES-SUR-MER
+                if (/^[A-Z\s\-]{3,30}$/.test(line) && !line.includes('£') && !line.includes('—')) {
                     currentMeeting = line; continue;
                 }
+
                 let raceStartMatch = line.match(/^([A-Za-z]+\/\d+)\s+(\d{1,2}[—:]\d{2})/);
                 if (raceStartMatch) {
                     let ukTimeFormatted = raceStartMatch[2].replace(/[—:]/, ':');
-                    activeRace = { meeting: currentMeeting, code: raceStartMatch[1], ukTime: ukTimeFormatted, slTime: "N/A", prize: "£0", prizeValue: 0, runners: "0" };
+                    activeRace = { meeting: currentMeeting, code: raceStartMatch[1], ukTime: ukTimeFormatted, slTime: "N/A", prize: "£0", prizeValue: 0, runners: "0", raceClass: "" };
                     races.push(activeRace); continue;
                 }
+
                 if (activeRace) {
                     let slMatch = line.match(/^\((\d{1,2}[.:]\d{2})\)$/);
                     if (slMatch) activeRace.slTime = slMatch[1].replace('.', ':');
+                    
+                    // Class Matcher
+                    let classMatch = line.match(/\((Class \d+)\)/i);
+                    if (classMatch) activeRace.raceClass = classMatch[1];
+
                     let prizeMatch = line.match(/£([\d,]+)/);
                     if (prizeMatch) {
                         activeRace.prize = "£" + prizeMatch[1];
@@ -237,7 +246,8 @@
                 let html = `<div class="race-block"><div class="race-meeting"><span>${meet}</span><button class="remove-btn" onclick="removeMeeting('${meet}')">CLOSE</button></div>`;
                 grouped[meet].forEach(r => { 
                     const highlightClass = (r.prizeValue === maxPrize && maxPrize > 0) ? "highlight-prize" : "";
-                    html += `<div class="race-line ${highlightClass}">${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.</div>`; 
+                    const displayClass = r.raceClass ? r.raceClass + " " : "";
+                    html += `<div class="race-line ${highlightClass}">${r.code} ${r.ukTime} (${r.slTime}) ${displayClass}${r.prize} ${r.runners} runners.</div>`; 
                 });
                 output.innerHTML += html + `</div>`;
             }
@@ -250,20 +260,27 @@
             if (currentRaces.length === 0) return alert("NO DATA FOUND");
             let txt = "LEISURE SPORTS HOLDINGS - UK RACE REPORT\n";
             txt += "========================================\n\n";
-            
-            // Group races by meeting for organized TXT output
             const grouped = currentRaces.reduce((acc, r) => { (acc[r.meeting] = acc[r.meeting] || []).push(r); return acc; }, {});
-            
             for (const meet in grouped) {
-                txt += `${meet}\n`; // Meeting Name
+                txt += `${meet}\n`;
                 grouped[meet].forEach(r => {
-                    txt += `${r.code} ${r.ukTime} (${r.slTime}) ${r.prize} ${r.runners} runners.\n`;
+                    const displayClass = r.raceClass ? r.raceClass + " " : "";
+                    txt += `${r.code} ${r.ukTime} (${r.slTime}) ${displayClass}${r.prize} ${r.runners} runners.\n`;
                 });
-                txt += "\n"; // Space between meetings
+                txt += "\n";
             }
-            
             const blob = new Blob([txt], { type: 'text/plain' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Race_Report_2026.txt"; a.click();
+        }
+
+        function downloadExcel() {
+            if (currentRaces.length === 0) return alert("NO DATA FOUND");
+            let csv = "Meeting,Code,UK Time,SL Time,Class,Prize,Runners\n";
+            currentRaces.forEach(r => {
+                csv += `"${r.meeting}","${r.code}","${r.ukTime}","${r.slTime}","${r.raceClass}","${r.prize}","${r.runners}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Race_Data_2026.csv"; a.click();
         }
     </script>
 </body>
