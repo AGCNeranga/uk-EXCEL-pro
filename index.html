@@ -75,16 +75,13 @@ document.onkeydown = (e) => {
         document.getElementById('passInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') _0x5f2e(); });
         let _0x_cur = [];
 
-     function _0x5f2e() {
-    const _0xa1 = document.getElementById('passInput').value;
-    // 'bWFsMTIzNA==' is 'lal1234' encoded in Base64
-    if(btoa(_0xa1) === "bWFsMTIzNA==") { 
-        document.getElementById('passwordScreen').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
-    } else { 
-        alert("ACCESS DENIED"); 
-    }
-}
+        function _0x5f2e() {
+            const _0xa1 = document.getElementById('passInput').value;
+            if(_0xa1 === "lal1234") {
+                document.getElementById('passwordScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+            } else { alert("ACCESS DENIED"); }
+        }
 
         function _0x8c21(_0xt) {
             const m = document.getElementById('infoModal'), t = document.getElementById('modalTitle'), b = document.getElementById('modalBody');
