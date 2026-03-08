@@ -53,24 +53,38 @@
     </footer>
 
     <script>
-        /* SECURITY LAYER 1: KEYBOARD PROTECTION */
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123) return false;
-            if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
-            if (e.ctrlKey && (e.keyCode == 'U'.charCodeAt(0) || e.keyCode == 'S'.charCodeAt(0))) return false;
-        };
+      /* SECURITY LAYER 1: ADVANCED KEYBOARD PROTECTION */
+document.onkeydown = (e) => {
+    // Prevent F12
+    if (e.keyCode == 123) return false;
+
+    // Prevent Ctrl + Shift + I/J/C (Windows/Linux)
+    if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false;
+
+    // Prevent Ctrl + U (View Source)
+    if (e.ctrlKey && e.keyCode == 85) return false;
+
+    // Prevent Cmd + Option + I/J/U/C (Mac)
+    if (e.metaKey && e.altKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 85 || e.keyCode == 67)) return false;
+    
+    // Prevent Cmd + U (Mac View Source)
+    if (e.metaKey && e.keyCode == 85) return false;
+};
 
         /* SECURITY LAYER 2: OBFUSCATED LOGIC */
         document.getElementById('passInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') _0x5f2e(); });
         let _0x_cur = [];
 
-        function _0x5f2e() {
-            const _0xa1 = document.getElementById('passInput').value;
-            if(_0xa1 === "lal1234") {
-                document.getElementById('passwordScreen').classList.add('hidden');
-                document.getElementById('mainContent').classList.remove('hidden');
-            } else { alert("ACCESS DENIED"); }
-        }
+     function _0x5f2e() {
+    const _0xa1 = document.getElementById('passInput').value;
+    // 'bWFsMTIzNA==' is 'lal1234' encoded in Base64
+    if(btoa(_0xa1) === "bWFsMTIzNA==") { 
+        document.getElementById('passwordScreen').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+    } else { 
+        alert("ACCESS DENIED"); 
+    }
+}
 
         function _0x8c21(_0xt) {
             const m = document.getElementById('infoModal'), t = document.getElementById('modalTitle'), b = document.getElementById('modalBody');
